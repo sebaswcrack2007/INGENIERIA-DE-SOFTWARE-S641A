@@ -1,37 +1,19 @@
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
-/**
- * Aplicación de consola para administrar plantillas y documentos.
- *
- * Permite registrar plantillas, clonarlas mediante el patrón Prototype,
- * consultar los documentos y modificar los datos de cada copia.
- * Las plantillas originales y los documentos generados se guardan en listas
- * separadas para conservar el documento original.
- *
- * @version 1.0
- */
 public class SistemaDocumentos {
 
-    /** Lee las opciones y los datos ingresados por el usuario. */
     private static final Scanner ENTRADA = new Scanner(System.in);
 
-    /** Plantillas disponibles para crear documentos nuevos. */
     private static final ArrayList<Documento> plantillas = new ArrayList<>();
-
-    /** Copias creadas a partir de las plantillas. */
     private static final ArrayList<Documento> documentosGenerados = new ArrayList<>();
 
-    /**
-     * Inicia el programa, registra algunas plantillas de ejemplo y muestra
-     * el menú principal hasta que el usuario elija salir.
-     *
-     * @param args argumentos de línea de comandos (no se utilizan)
-     */
     public static void main(String[] args) {
         cargarPlantillasIniciales();
 
         int opcion;
+
         do {
             mostrarMenu();
             opcion = leerEntero("Seleccione una opción: ");
@@ -59,9 +41,11 @@ public class SistemaDocumentos {
                     System.out.println("Opción no válida. Intente de nuevo.");
             }
         } while (opcion != 6);
+
+        ENTRADA.close();
     }
 
-    /** Registra tres plantillas iniciales para facilitar las primeras pruebas. */
+    /** Registra una plantilla inicial de cada tipo. */
     private static void cargarPlantillasIniciales() {
         plantillas.add(new PropuestaComercial(
                 "Plantilla de propuesta comercial",
@@ -91,7 +75,6 @@ public class SistemaDocumentos {
         ));
     }
 
-    /** Muestra las operaciones disponibles. */
     private static void mostrarMenu() {
         System.out.println("\n===== SISTEMA DE DOCUMENTOS =====");
         System.out.println("1. Crear una plantilla");
@@ -102,23 +85,32 @@ public class SistemaDocumentos {
         System.out.println("6. Salir");
     }
 
-    /** Solicita los datos de un tipo de documento y lo registra como plantilla. */
+    /** Crea una plantilla del tipo seleccionado. */
     private static void crearPlantilla() {
         System.out.println("\n--- Crear plantilla ---");
         System.out.println("1. Propuesta comercial");
         System.out.println("2. Informe técnico");
         System.out.println("3. Contrato de prestación de servicios");
+
         int tipo = leerEntero("Seleccione el tipo de documento: ");
 
-        String nombre = leerTexto("Nombre de la plantilla: ");
+        if (tipo < 1 || tipo > 3) {
+            System.out.println("Tipo de documento no válido.");
+            return;
+        }
+
+        String nombre = leerTextoObligatorio("Nombre de la plantilla: ");
         Documento nuevaPlantilla;
 
         switch (tipo) {
             case 1:
-                String numeroPropuesta = leerTexto("Número de propuesta: ");
-                String cliente = leerTexto("Cliente: ");
-                String descripcion = leerTexto("Descripción del servicio: ");
-                double valorPropuesta = leerDouble("Valor de la propuesta: ");
+                String numeroPropuesta =
+                        leerTextoObligatorio("Número de propuesta: ");
+                String cliente = leerTextoObligatorio("Cliente: ");
+                String descripcion =
+                        leerTextoObligatorio("Descripción del servicio: ");
+                double valorPropuesta =
+                        leerDouble("Valor de la propuesta: ");
                 int vigencia = leerEntero("Vigencia en días: ");
 
                 nuevaPlantilla = new PropuestaComercial(
@@ -127,20 +119,25 @@ public class SistemaDocumentos {
                 break;
 
             case 2:
-                String titulo = leerTexto("Título del informe: ");
-                String responsable = leerTexto("Responsable: ");
-                String area = leerTexto("Área de trabajo: ");
-                String fecha = leerTexto("Fecha: ");
-                String conclusiones = leerTexto("Conclusiones: ");
+                String titulo = leerTextoObligatorio("Título del informe: ");
+                String responsable =
+                        leerTextoObligatorio("Responsable: ");
+                String area = leerTextoObligatorio("Área de trabajo: ");
+                String fecha = leerTextoObligatorio("Fecha: ");
+                String conclusiones =
+                        leerTextoObligatorio("Conclusiones: ");
 
                 nuevaPlantilla = new InformeTecnico(
                         nombre, titulo, responsable, area, fecha, conclusiones);
                 break;
 
             case 3:
-                String numeroContrato = leerTexto("Número de contrato: ");
-                String contratista = leerTexto("Contratista: ");
-                String entidad = leerTexto("Entidad contratante: ");
+                String numeroContrato =
+                        leerTextoObligatorio("Número de contrato: ");
+                String contratista =
+                        leerTextoObligatorio("Contratista: ");
+                String entidad =
+                        leerTextoObligatorio("Entidad contratante: ");
                 double valorContrato = leerDouble("Valor del contrato: ");
                 int duracion = leerEntero("Duración en meses: ");
 
@@ -150,7 +147,6 @@ public class SistemaDocumentos {
                 break;
 
             default:
-                System.out.println("Tipo de documento no válido. No se creó la plantilla.");
                 return;
         }
 
@@ -158,34 +154,38 @@ public class SistemaDocumentos {
         System.out.println("Plantilla registrada correctamente.");
     }
 
-    /** Muestra todas las plantillas registradas y sus datos. */
+    /** Muestra todas las plantillas registradas. */
     private static void listarPlantillas() {
         System.out.println("\n--- Plantillas disponibles ---");
+
         if (plantillas.isEmpty()) {
             System.out.println("No hay plantillas registradas.");
             return;
         }
 
         for (int i = 0; i < plantillas.size(); i++) {
+            Documento documento = plantillas.get(i);
+
             System.out.println("\nPlantilla " + (i + 1)
-                    + " (" + plantillas.get(i).getClass().getSimpleName() + ")");
-            plantillas.get(i).mostrar();
+                    + " (" + documento.getClass().getSimpleName() + ")");
+            documento.mostrar();
         }
     }
 
-    /**
-     * Permite seleccionar una plantilla y crear una copia mediante Prototype.
-     * La copia se almacena en una lista distinta a la de las plantillas.
-     */
+    /** Clona una plantilla y guarda la copia por separado. */
     private static void clonarPlantilla() {
         System.out.println("\n--- Clonar plantilla ---");
+
         if (plantillas.isEmpty()) {
             System.out.println("No hay plantillas para clonar.");
             return;
         }
 
         listarPlantillas();
-        int indice = leerEntero("Ingrese el número de la plantilla que desea clonar: ") - 1;
+
+        int indice = leerEntero(
+                "Ingrese el número de la plantilla que desea clonar: ") - 1;
+
         if (indice < 0 || indice >= plantillas.size()) {
             System.out.println("Número de plantilla no válido.");
             return;
@@ -196,19 +196,22 @@ public class SistemaDocumentos {
 
         String nombreCopia = leerTexto(
                 "Nombre para la copia (Enter para conservar el nombre original): ");
+
         if (!nombreCopia.isEmpty()) {
             copia.setNombre(nombreCopia);
         }
 
         documentosGenerados.add(copia);
+
         System.out.println("Documento clonado y guardado correctamente.");
         System.out.println("Datos de la copia:");
         copia.mostrar();
     }
 
-    /** Muestra todos los documentos creados a partir de las plantillas. */
+    /** Muestra los documentos generados. */
     private static void listarDocumentosGenerados() {
         System.out.println("\n--- Documentos generados ---");
+
         if (documentosGenerados.isEmpty()) {
             System.out.println("Todavía no se han generado documentos.");
             return;
@@ -216,22 +219,27 @@ public class SistemaDocumentos {
 
         for (int i = 0; i < documentosGenerados.size(); i++) {
             Documento documento = documentosGenerados.get(i);
+
             System.out.println("\nDocumento " + (i + 1)
                     + " (" + documento.getClass().getSimpleName() + ")");
             documento.mostrar();
         }
     }
 
-    /** Permite seleccionar una copia y modificar su nombre o sus atributos propios. */
+    /** Permite modificar una copia sin alterar la plantilla original. */
     private static void modificarDocumento() {
         System.out.println("\n--- Modificar documento ---");
+
         if (documentosGenerados.isEmpty()) {
             System.out.println("No hay documentos generados para modificar.");
             return;
         }
 
         listarDocumentosGenerados();
-        int indice = leerEntero("Ingrese el número del documento que desea modificar: ") - 1;
+
+        int indice = leerEntero(
+                "Ingrese el número del documento que desea modificar: ") - 1;
+
         if (indice < 0 || indice >= documentosGenerados.size()) {
             System.out.println("Número de documento no válido.");
             return;
@@ -241,7 +249,8 @@ public class SistemaDocumentos {
         int opcion;
 
         do {
-            System.out.println("\nDocumento seleccionado: " + documento.getNombre());
+            System.out.println("\nDocumento seleccionado: "
+                    + documento.getNombre());
             System.out.println("1. Cambiar nombre del documento");
 
             if (documento instanceof PropuestaComercial) {
@@ -272,7 +281,9 @@ public class SistemaDocumentos {
             }
 
             if (opcion == 1) {
-                documento.setNombre(leerTexto("Nuevo nombre: "));
+                String nuevoNombre =
+                        leerTextoObligatorio("Nuevo nombre: ");
+                documento.setNombre(nuevoNombre);
             } else if (documento instanceof PropuestaComercial) {
                 modificarPropuesta((PropuestaComercial) documento, opcion);
             } else if (documento instanceof InformeTecnico) {
@@ -282,92 +293,123 @@ public class SistemaDocumentos {
             } else {
                 System.out.println("Opción no válida.");
             }
+
         } while (true);
 
         System.out.println("Documento actualizado:");
         documento.mostrar();
     }
 
-    /** Modifica el atributo seleccionado de una propuesta comercial. */
-    private static void modificarPropuesta(PropuestaComercial propuesta, int opcion) {
+    private static void modificarPropuesta(
+            PropuestaComercial propuesta, int opcion) {
+
         switch (opcion) {
             case 2:
-                propuesta.setNumero(leerTexto("Nuevo número de propuesta: "));
+                propuesta.setNumero(
+                        leerTextoObligatorio("Nuevo número de propuesta: "));
                 break;
             case 3:
-                propuesta.setCliente(leerTexto("Nuevo cliente: "));
+                propuesta.setCliente(
+                        leerTextoObligatorio("Nuevo cliente: "));
                 break;
             case 4:
-                propuesta.setDescripcion(leerTexto("Nueva descripción: "));
+                propuesta.setDescripcion(
+                        leerTextoObligatorio("Nueva descripción: "));
                 break;
             case 5:
                 propuesta.setValor(leerDouble("Nuevo valor: "));
                 break;
             case 6:
-                propuesta.setVigenciaDias(leerEntero("Nueva vigencia en días: "));
+                propuesta.setVigenciaDias(
+                        leerEntero("Nueva vigencia en días: "));
                 break;
             default:
                 System.out.println("Opción no válida.");
         }
     }
 
-    /** Modifica el atributo seleccionado de un informe técnico. */
-    private static void modificarInforme(InformeTecnico informe, int opcion) {
+    private static void modificarInforme(
+            InformeTecnico informe, int opcion) {
+
         switch (opcion) {
             case 2:
-                informe.setTitulo(leerTexto("Nuevo título: "));
+                informe.setTitulo(
+                        leerTextoObligatorio("Nuevo título: "));
                 break;
             case 3:
-                informe.setResponsable(leerTexto("Nuevo responsable: "));
+                informe.setResponsable(
+                        leerTextoObligatorio("Nuevo responsable: "));
                 break;
             case 4:
-                informe.setAreaTrabajo(leerTexto("Nueva área de trabajo: "));
+                informe.setAreaTrabajo(
+                        leerTextoObligatorio("Nueva área de trabajo: "));
                 break;
             case 5:
-                informe.setFecha(leerTexto("Nueva fecha: "));
+                informe.setFecha(
+                        leerTextoObligatorio("Nueva fecha: "));
                 break;
             case 6:
-                informe.setConclusiones(leerTexto("Nuevas conclusiones: "));
+                informe.setConclusiones(
+                        leerTextoObligatorio("Nuevas conclusiones: "));
                 break;
             default:
                 System.out.println("Opción no válida.");
         }
     }
 
-    /** Modifica el atributo seleccionado de un contrato de servicios. */
-    private static void modificarContrato(ContratoServicios contrato, int opcion) {
+    private static void modificarContrato(
+            ContratoServicios contrato, int opcion) {
+
         switch (opcion) {
             case 2:
-                contrato.setNumeroContrato(leerTexto("Nuevo número de contrato: "));
+                contrato.setNumeroContrato(
+                        leerTextoObligatorio("Nuevo número de contrato: "));
                 break;
             case 3:
-                contrato.setContratista(leerTexto("Nuevo contratista: "));
+                contrato.setContratista(
+                        leerTextoObligatorio("Nuevo contratista: "));
                 break;
             case 4:
-                contrato.setEntidadContratante(leerTexto("Nueva entidad contratante: "));
+                contrato.setEntidadContratante(
+                        leerTextoObligatorio("Nueva entidad contratante: "));
                 break;
             case 5:
                 contrato.setValor(leerDouble("Nuevo valor: "));
                 break;
             case 6:
-                contrato.setDuracionMeses(leerEntero("Nueva duración en meses: "));
+                contrato.setDuracionMeses(
+                        leerEntero("Nueva duración en meses: "));
                 break;
             default:
                 System.out.println("Opción no válida.");
         }
     }
 
-    /** Lee una línea de texto ingresada por el usuario. */
+    /** Lee texto y no permite que quede vacío. */
+    private static String leerTextoObligatorio(String mensaje) {
+        while (true) {
+            String texto = leerTexto(mensaje);
+
+            if (!texto.isEmpty()) {
+                return texto;
+            }
+
+            System.out.println("Este campo no puede quedar vacío.");
+        }
+    }
+
+    /** Lee una línea de texto. */
     private static String leerTexto(String mensaje) {
         System.out.print(mensaje);
         return ENTRADA.nextLine().trim();
     }
 
-    /** Lee un número entero y vuelve a solicitarlo si la entrada no es válida. */
+    /** Lee un entero y repite la pregunta si el dato no es válido. */
     private static int leerEntero(String mensaje) {
         while (true) {
             System.out.print(mensaje);
             String entrada = ENTRADA.nextLine().trim();
+
             try {
                 return Integer.parseInt(entrada);
             } catch (NumberFormatException e) {
@@ -376,15 +418,23 @@ public class SistemaDocumentos {
         }
     }
 
-    /** Lee un número decimal y vuelve a solicitarlo si la entrada no es válida. */
+    /** Lee un número decimal y acepta punto o coma decimal. */
     private static double leerDouble(String mensaje) {
         while (true) {
             System.out.print(mensaje);
             String entrada = ENTRADA.nextLine().trim().replace(',', '.');
+
             try {
-                return Double.parseDouble(entrada);
+                double valor = Double.parseDouble(entrada);
+
+                if (Double.isFinite(valor)) {
+                    return valor;
+                }
+
+                System.out.println("Ingrese un número finito válido.");
             } catch (NumberFormatException e) {
-                System.out.println("Ingrese un número válido. Puede usar punto o coma decimal.");
+                System.out.println(
+                        "Ingrese un número válido. Puede usar punto o coma decimal.");
             }
         }
     }

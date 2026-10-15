@@ -1,26 +1,15 @@
+
 public class ContratoServicios extends Documento {
 
-    /** Número que identifica el contrato. */
     private String numeroContrato;
-
-    /** Nombre del contratista. */
     private String contratista;
-
-    /** Nombre de la entidad que contrata el servicio. */
     private String entidadContratante;
-
-    /** Valor económico del contrato. */
     private double valor;
-
-    /** Duración del contrato expresada en meses. */
     private int duracionMeses;
 
-    /**
-     * Crea un contrato de prestación de servicios con sus datos.
-     */
     public ContratoServicios(String nombre, String numeroContrato,
-            String contratista, String entidadContratante,
-            double valor, int duracionMeses) {
+                             String contratista, String entidadContratante,
+                             double valor, int duracionMeses) {
         super(nombre);
         this.numeroContrato = numeroContrato;
         this.contratista = contratista;
@@ -29,9 +18,7 @@ public class ContratoServicios extends Documento {
         this.duracionMeses = duracionMeses;
     }
 
-    /**
-     * Constructor de copia. Crea un contrato nuevo con los datos de otro.
-     */
+    /** Constructor de copia. */
     private ContratoServicios(ContratoServicios original) {
         super(original.getNombre());
         this.numeroContrato = original.numeroContrato;
@@ -41,14 +28,12 @@ public class ContratoServicios extends Documento {
         this.duracionMeses = original.duracionMeses;
     }
 
-    /**
-     * Crea una copia independiente del contrato actual.
-     */
+    @Override
     public ContratoServicios clonar() {
         return new ContratoServicios(this);
     }
 
-    /** Muestra en consola los datos del contrato. */
+    @Override
     public void mostrar() {
         System.out.println("Nombre: " + getNombre());
         System.out.println("Número de contrato: " + numeroContrato);
@@ -86,17 +71,14 @@ public class ContratoServicios extends Documento {
         return valor;
     }
 
-    /** @param valor nuevo valor económico del contrato */
     public void setValor(double valor) {
         this.valor = valor;
     }
 
-    /** @return duración del contrato en meses */
     public int getDuracionMeses() {
         return duracionMeses;
     }
 
-    /** @param duracionMeses nueva duración del contrato en meses */
     public void setDuracionMeses(int duracionMeses) {
         this.duracionMeses = duracionMeses;
     }
